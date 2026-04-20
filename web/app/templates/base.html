@@ -1,0 +1,43 @@
+<!-- web/app/templates/base.html -->
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>{% block title %}TaskManager{% endblock %}</title>
+    <link rel='stylesheet' href="{{ url_for('static', filename='css/style.css')
+    }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class='navbar'>
+        <a href="{{ url_for('main.index') }}" class='logo'>📋 TaskManager</a>
+        
+        <div class='nav-links'>
+        <a href="{{ url_for('projects.lista') }}">Proyectos</a>
+        <a href="{{ url_for('tasks.mis_tareas') }}">Mis tareas</a>
+        {% if current_user %}
+        <span class='usuario'>{{ current_user.nombre }}</span>
+        <a href="{{ url_for('auth.logout') }}">Salir</a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class='btnnav'>Entrar</a>
+        {% endif %}
+        </div>
+    </nav>
+
+    <div class='mensajes'>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensaje in messages %}
+        <div class='alerta alerta-{{ categoria }}'>{{ mensaje }}</div>
+        {% endfor %}
+        {% endwith %}
+    </div>
+
+    <main class='contenido'>
+    {% block content %}{% endblock %}
+    </main>
+
+    <footer><p>&copy; 2025 TaskManager — DAW / DAM</p></footer>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

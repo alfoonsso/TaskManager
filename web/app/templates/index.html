@@ -1,0 +1,35 @@
+<!-- web/app/templates/index.html -->
+{# La primera línea SIEMPRE debe ser extends #}
+{% extends 'base.html' %}
+{% block title %}Dashboard — TaskManager{% endblock %}
+{% block content %}
+<section class='dashboard'>
+    <h1>Tu panel de control</h1>
+
+    <div class='stats'>
+        <div class='stat'>
+            <span class='numero'>{{ total_proyectos }}</span>
+            <span class='etiqueta'>Proyectos</span>
+        </div>
+        <div class='stat'>
+            <span class='numero'>{{ total_pendientes }}</span>
+            <span class='etiqueta'>Tareas pendientes</span>
+        </div>
+        <div class='stat'>
+            <span class='numero'>{{ tareas_urgentes | length }}</span>
+            <span class='etiqueta'>Urgentes</span>
+        </div>
+    </div>
+
+    <h2>Tareas que requieren atención</h2>
+    {% for tarea in tareas_urgentes %}
+        <div class='tarea-urgente'>
+            <strong>{{ tarea.titulo }}</strong>
+            <span class='proyecto'>{{ tarea.proyecto }}</span>
+            <span class='badge alta'>{{ tarea.prioridad | upper }}</span>
+        </div>
+    {% else %}
+        <p class='vacio'>¡Todo bajo control! No hay tareas urgentes.</p>
+    {% endfor %}
+</section>
+{% endblock %}
