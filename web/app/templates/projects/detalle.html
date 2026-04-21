@@ -1,0 +1,61 @@
+<!-- web/app/templates/projects/detalle.html -->
+{% extends 'base.html' %}
+{% block title %}{{ proyecto.titulo }} — TaskManager{% endblock %}
+{% block content %}
+<div class='page-header'>
+ <div>
+ <a href="{{ url_for('projects.lista') }}" class='breadcrumb'>←
+Proyectos</a>
+ <h1>{{ proyecto.titulo }}</h1>
+ </div>
+ <div class='acciones'>
+ <a href="{{ url_for('projects.editar', pid=proyecto.id) }}" class='btn
+btn-sec'>Editar</a>
+ </div>
+</div>
+<p class='descripcion-proyecto'>{{ proyecto.descripcion }}</p>
+{# Calcular el progreso del proyecto #}
+{% set completadas = proyecto.tareas | selectattr('estado', 'equalto',
+'completada') | list %}
+{% set total = proyecto.tareas | length %}
+{% if total > 0 %}
+ {% set progreso = (completadas | length / total * 100) | round | int %}
+ <div class='progreso-container'>
+ <div class='progreso-label'>Progreso: {{ progreso }}%</div>
+ <div class='progreso-barra'>
+ <div class='progreso-relleno' style='width: {{ progreso }}%'></div>
+ </div>
+ </div>
+{% endif %}
+<div class='tareas-header'>
+ <h2>Tareas ({{ total }})</h2>
+ <a href="{{ url_for('tasks.nueva', pid=proyecto.id) }}" class='btn'>+ Nueva
+tarea</a>
+</div>
+{% for tarea in proyecto.tareas %}
+ <div class='tarea prioridad-{{ tarea.prioridad }}'>
+ <div class='tarea-info'>
+ <span class='badge badge-prioridad-{{ tarea.prioridad }}'>
+ {{ tarea.prioridad | upper }}
+ </span>
+ <strong>{{ tarea.titulo }}</strong>
+ </div>
+ <span class='badge badge-estado-{{ tarea.estado }}'>
+ {{ tarea.estado | replace('_', ' ') | capitalize }}
+ </span>
+ </div>
+<div class='acciones-tarea'>
+<!-- Botón para Editar -->
+<a href="{{ url_for('tasks.editar', pid=proyecto.id, tid=tarea.id) }}">✏️
+Editar</a>
+<!-- Formulario para Eliminar -->
+<form action="{{ url_for('tasks.eliminar', pid=proyecto.id, tid=tarea.id) }}"
+method='POST' style='display:inline'>
+<button type='submit' onclick="return confirm('¿Eliminar?')">🗑️
+Borrar</button>
+</form>
+</div>
+{% else %}
+ <p class='vacio'>Este proyecto no tiene tareas todavía.</p>
+{% endfor %}
+{% endblock %}

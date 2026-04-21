@@ -42,3 +42,10 @@ def detalle(pid):
 @projects.route('/nuevo')
 def nuevo():
     return "Formulario para nuevo proyecto (Próximamente en U03)"
+
+@projects.route('/<int:pid>/editar')
+def editar(pid):
+    proyecto = next((p for p in PROYECTOS_PRUEBA if p['id'] == pid), None)
+    if proyecto is None:
+        abort(404)
+    return "Formulario para editar proyecto (Próximamente)"

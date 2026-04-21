@@ -1,0 +1,15 @@
+<!-- web/app/templates/errores/404.html -->
+{% extends 'base.html' %}
+{% block title %}Página no encontrada — TaskManager{% endblock %}
+{% block content %}
+<div class='error-page'>
+    <div class='error-codigo'>404</div>
+    <h1>Página no encontrada</h1>
+    <p>La página que buscas no existe o ha sido movida.</p>
+    <div class='error-acciones'>
+        <a href="{{ url_for('main.index') }}" class='btn'>Ir al inicio</a>
+        <a href="{{ url_for('projects.lista') }}" class='btn btn-sec'>Ver
+        proyectos</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Proyectos — TaskManager{% endblock %}
+{% block content %}
+<div class='page-header'>
+    <h1>Proyectos</h1>
+    <a href="{{ url_for('projects.nuevo') }}" class='btn'>+ Nuevo proyecto</a>
+</div>
+
+{% if proyectos %}
+<div class='proyectos-grid'>
+{% for p in proyectos %}
+    <div class='tarjeta proyecto estado-{{ p.estado }}'>
+        <div class='tarjeta-header'>
+            <h3>
+                <a href="{{ url_for('projects.detalle', pid=p.id) }}">
+                    {{ p.titulo }}
+                </a>
+            </h3>
+            <span class='badge badge-{{ p.estado }}'>{{ p.estado |
+            capitalize }}</span>
+        </div>
+        <p class='descripcion'>{{ p.descripcion | truncate(100) }}</p>
+        <div class='tarjeta-footer'>
+            <span>{{ p.tareas | length }} tareas</span>
+            <a href="{{ url_for('projects.detalle', pid=p.id) }}">Ver
+    detalles →</a>
+        </div>
+    </div>
+{% endfor %}
+</div>
+{% else %}
+<div class='estado-vacio'>
+    <p>No tienes proyectos todavía.</p>
+    <a href="{{ url_for('projects.nuevo') }}" class='btn'>Crea tu primer
+proyecto</a>
+</div>
+{% endif %}
+{% endblock %}
