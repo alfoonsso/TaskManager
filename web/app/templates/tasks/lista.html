@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Mis Tareas — TaskManager{% endblock %}
+{% block content %}
+<div class='page-header'>
+    <h1>Mis Tareas</h1>
+</div>
+{% for tarea in tareas %}
+<div class='tarea prioridad-{{ tarea.prioridad }}'>
+    <div class='tarea-info'>
+        <span class='badge badge-prioridad-{{ tarea.prioridad }}'>
+            {{ tarea.prioridad | upper }}
+        </span>
+        <strong>{{ tarea.titulo }}</strong>
+        <span class='proyecto-nombre'>— {{ tarea.proyecto }}</span>
+    </div>
+    <span class='badge badge-estado-{{ tarea.estado }}'>
+        {{ tarea.estado | replace('_', ' ') | capitalize }}
+    </span>
+</div>
+{% else %}
+<p class='vacio'>No hay tareas.</p>
+{% endfor %}
+{% endblock %}
