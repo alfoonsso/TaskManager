@@ -98,7 +98,7 @@ def lista():
     form_busqueda = BusquedaForm()
     proyectos = PROYECTOS.copy()
     q = ''
-    
+
     # Leer el parámetro de búsqueda de la URL (/proyectos?q=texto)
     q = request.args.get('q', '').strip()
     if q:
@@ -112,3 +112,10 @@ def lista():
                             form_busqueda=form_busqueda,
                             q=q,
                             total=len(PROYECTOS))
+
+@projects.route('/<int:pid>')
+def detalle(pid):
+    proyecto = next((p for p in PROYECTOS if p['id'] == pid), None)
+    if proyecto is None:
+        abort(404)
+    return render_template('projects/detalle.html', proyecto=proyecto)

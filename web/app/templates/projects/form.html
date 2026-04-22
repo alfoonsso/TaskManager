@@ -1,0 +1,66 @@
+<!-- web/app/templates/projects/form.html -->
+{% extends 'base.html' %}
+{% block title %}{{ titulo_pagina }} — TaskManager{% endblock %}
+
+{% block extra_css %}
+<style>
+    .campo { margin-bottom: 1.2rem; }
+    .campo label { display: block; font-weight: 600; margin-bottom: .4rem;
+                    color: #1a3a5c; }
+    .input, .textarea, .select {
+                                width: 100%; padding: .6rem .8rem; border: 1px solid #ccc;
+                                border-radius: 6px; font-size: 1rem; font-family: inherit; }
+    .input:focus, .textarea:focus, .select:focus {
+                                outline: none; border-color: #2471a3;
+                                box-shadow: 0 0 0 3px rgba(36,113,163,.15); }
+    .campo.con-error .input,
+    .campo.con-error .textarea { border-color: #e74c3c; }
+    .error-msg { color: #e74c3c; font-size: .85rem; margin-top: .3rem; }
+    .form-card { background: #fff; border-radius: 8px; padding: 2rem;
+                max-width: 640px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .form-acciones { display: flex; gap: 1rem; margin-top: 1.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class='page-header'>
+    <h1>{{ titulo_pagina }}</h1>
+</div>
+
+<div class='form-card'>
+    <form method='POST' novalidate>
+        {{ form.hidden_tag() }}
+        {# ↑ OBLIGATORIO: incluye el token CSRF oculto en el formulario #}
+        
+        {# Campo: Título #}
+        <div class='campo {% if form.titulo.errors %}con-error{% endif %}'>
+            {{ form.titulo.label }}
+            {{ form.titulo(class='input', placeholder='Nombre del proyecto') }}
+            {% for error in form.titulo.errors %}
+                <p class='error-msg'>{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        {# Campo: Descripción #}
+        <div class='campo {% if form.descripcion.errors %}con-error{% endif
+%}'>
+            {{ form.descripcion.label }}
+            {{ form.descripcion(class='textarea', rows='4', placeholder='Describe el objetivo del proyecto...') }}
+            {% for error in form.descripcion.errors %}
+                <p class='error-msg'>{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        {# Campo: Fecha límite #}
+        <div class='campo'>
+            {{ form.fecha_limite.label }}
+            {{ form.fecha_limite(class='input') }}
+        </div>
+
+        <div class='form-acciones'>
+            {{ form.submit(class='btn') }}
+            <a href="{{ url_for('projects.lista') }}" class='btn btnsec'>Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

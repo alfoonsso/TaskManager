@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from .projects import PROYECTOS_PRUEBA
+from .projects import PROYECTOS
 
 tasks = Blueprint('tasks', __name__)
 
@@ -8,7 +8,7 @@ ORDEN = {'urgente': 0, 'alta': 1, 'media': 2, 'baja': 3}
 @tasks.route('/tareas')
 def mis_tareas():
     todas = []
-    for proyecto in PROYECTOS_PRUEBA:
+    for proyecto in PROYECTOS:
         for tarea in proyecto['tareas']:
             tarea['proyecto'] = proyecto['titulo']
             todas.append(tarea)
