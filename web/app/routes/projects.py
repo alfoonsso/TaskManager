@@ -47,8 +47,7 @@ def nuevo():
         'id': CONTADOR,
         'titulo': form.titulo.data,
         'descripcion': form.descripcion.data or '',
-        'fecha_limite':str(form.fecha_limite.data) if
-        form.fecha_limite.data else None,
+        'fecha_limite':str(form.fecha_limite.data) if form.fecha_limite.data else None,
         'estado': 'activo',
         'tareas': []
         }
@@ -82,12 +81,10 @@ def editar(pid):
         # Actualizar los datos del proyecto
         proyecto['titulo'] = form.titulo.data
         proyecto['descripcion'] = form.descripcion.data or ''
-        proyecto['fecha_limite']= str(form.fecha_limite.data) 
-        if form.fecha_limite.data:
-            flash('Proyecto actualizado correctamente.', 'success')
-            return redirect(url_for('projects.detalle', pid=pid))
-        else:
-            return None
+        proyecto['fecha_limite']= str(form.fecha_limite.data) if form.fecha_limite.data else None
+        
+        flash('Proyecto actualizado correctamente.', 'success')
+        return redirect(url_for('projects.detalle', pid=pid))
         
     return render_template('projects/form.html',
                             form=form,

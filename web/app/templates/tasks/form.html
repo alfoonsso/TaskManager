@@ -1,0 +1,47 @@
+<!-- web/app/templates/tasks/form.html -->
+{% extends 'base.html' %}
+{% block title %}{{ titulo_pagina }} — TaskManager{% endblock %}
+
+{% block content %}
+<div class='page-header'>
+    <h1>{{ titulo_pagina }}</h1>
+</div>
+
+<div class='form-card'>
+    <form method='POST' novalidate>
+        {{ form.hidden_tag() }}
+        <div class='campo {% if form.titulo.errors %}con-error{% endif %}'>
+            {{ form.titulo.label }}
+            {{ form.titulo(class='input', placeholder='¿Qué hay que hacer?') }}
+            {% for error in form.titulo.errors %}
+                <p class='error-msg'>{{ error }}</p>
+            {% endfor %}
+        </div>
+        <div class='campo'>
+            {{ form.descripcion.label }}
+            {{ form.descripcion(class='textarea', rows='3') }}
+        </div>
+
+        {# Fila con dos campos en paralelo #}
+        <div style='display:grid; grid-template-columns:1fr 1fr; gap:1rem'>
+            <div class='campo'>
+                {{ form.prioridad.label }}
+                {{ form.prioridad(class='select') }}
+            </div>
+            <div class='campo'>
+                {{ form.estado.label }}
+                {{ form.estado(class='select') }}
+            </div>
+        </div>
+        <div class='campo'>
+            {{ form.fecha_limite.label }}
+            {{ form.fecha_limite(class='input') }}
+        </div>
+        
+        <div class='form-acciones'>
+            {{ form.submit(class='btn') }}
+            <a href="{{ url_for('projects.lista') }}" class='btn btnsec'>Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
