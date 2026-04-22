@@ -1,6 +1,32 @@
 {% extends 'base.html' %}
 {% block title %}Proyectos — TaskManager{% endblock %}
 {% block content %}
+<form method='GET' action="{{ url_for('projects.lista') }}" class='busqueda'>
+    {# La búsqueda usa GET, no necesita token CSRF #}
+    <div style='display:flex; gap:.8rem; margin-bottom:1.5rem'>
+        {{ form_busqueda.q(class='input',
+                            placeholder='Buscar proyectos...',
+                            value=q) }}
+        {{ form_busqueda.submit(class='btn') }}
+        {% if q %}
+            <a href="{{ url_for('projects.lista') }}" class='btn btn-sec'>
+            × Limpiar
+            </a>
+        {% endif %}
+    </div>
+</form>
+
+{% if q %}
+    <p class='resultado-busqueda'>
+    {% if proyectos %}
+        {{ proyectos | length }} resultado(s) para: <strong>"{{ q
+        }}"</strong>
+    {% else %}
+        No hay resultados para: <strong>"{{ q }}"</strong>
+    {% endif %}
+    </p>
+{% endif %}
+
 <div class='page-header'>
     <h1>Proyectos</h1>
     <a href="{{ url_for('projects.nuevo') }}" class='btn'>+ Nuevo proyecto</a>

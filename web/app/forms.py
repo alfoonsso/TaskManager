@@ -71,7 +71,7 @@ class BusquedaForm(FlaskForm):
         validators=[DataRequired(), Length(min=2,
         message='Escribe al menos 2 caracteres para buscar.')]
         )
-submit = SubmitField('Buscar')
+    submit = SubmitField('Buscar')
 class LoginForm(FlaskForm):
     """Formulario de inicio de sesión (lo usaremos en U05)."""
     email = StringField('Email', validators=[DataRequired(), Email()])

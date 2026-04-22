@@ -104,6 +104,7 @@ def lista():
             if q.lower() in p['titulo'].lower()
             or q.lower() in p.get('descripcion', '').lower()
         ]
+        
     return render_template('projects/lista.html',
                             proyectos=proyectos,
                             form_busqueda=form_busqueda,
