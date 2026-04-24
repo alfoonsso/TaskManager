@@ -15,9 +15,9 @@
 </div>
 <p class='descripcion-proyecto'>{{ proyecto.descripcion }}</p>
 {# Calcular el progreso del proyecto #}
-{% set completadas = proyecto.tareas | selectattr('estado', 'equalto',
+{% set completadas = tareas | selectattr('estado', 'equalto',
 'completada') | list %}
-{% set total = proyecto.tareas | length %}
+{% set total = tareas | length %}
 {% if total > 0 %}
 {% set progreso = (completadas | length / total * 100) | round | int %}
 <div class='progreso-container'>
@@ -49,10 +49,11 @@
     <a href="{{ url_for('tasks.editar', pid=proyecto.id, tid=tarea.id) }}">✏️
     Editar</a>
     <!-- Formulario para Eliminar -->
-    <form action="{{ url_for('tasks.eliminar', pid=proyecto.id, tid=tarea.id) }}"
-    method='POST' style='display:inline'>
-        <button type='submit' onclick="return confirm('¿Eliminar?')">🗑️
-        Borrar</button>
+    <form action="{{ url_for('projects.eliminar', pid=proyecto.id) }}" method='POST' style='display:inline'>
+        {{ form.hidden_tag() }}
+        <button type='submit' onclick="return confirm('¿Eliminar proyecto?')">
+            🗑️ Eliminar
+        </button>
     </form>
 </div>
 {% else %}

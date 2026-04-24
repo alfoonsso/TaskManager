@@ -89,3 +89,6 @@ class RegistroForm(FlaskForm):
     message='Las contraseñas no coinciden.')])
 
     submit = SubmitField('Crear cuenta')
+
+class FormularioVacio(FlaskForm):
+    pass

@@ -1,119 +1,76 @@
 from flask import Blueprint, render_template, abort, flash, redirect, url_for, request
-from app.forms import ProyectoForm, BusquedaForm
+from app.forms import ProyectoForm, BusquedaForm, FormularioVacio
+from app import db
+from app.models import Proyecto, Tarea
 # url_prefix='/proyectos' hace que TODAS las rutas de este Blueprint
 # tengan /proyectos como prefijo automáticamente.
 projects = Blueprint('projects', __name__, url_prefix='/proyectos')
 
-PROYECTOS = [
-    {'id': 1, 'titulo': 'Rediseño web corporativa',
-    'descripcion': 'Modernizar la web con nuevo diseño y mejor rendimiento.',
-    'estado': 'activo', 'prioridad': 'alta',
-    'tareas': [
-    {'id': 1, 'titulo': 'Wireframes de la home', 'estado':
-    'completada', 'prioridad': 'media'},
-    {'id': 2, 'titulo': 'Implementar nuevo header', 'estado':
-    'en_progreso','prioridad': 'alta'},
-    {'id': 3, 'titulo': 'Optimizar imágenes', 'estado': 'pendiente',
-    'prioridad': 'baja'},
-    ]},
-    {'id': 2, 'titulo': 'App móvil iOS/Android',
-    'descripcion': 'Nueva aplicación móvil nativa para clientes.',
-    'estado': 'activo', 'prioridad': 'urgente',
-    'tareas': [
-    {'id': 4, 'titulo': 'Configurar repositorio', 'estado':
-    'completada', 'prioridad': 'alta'},
-    {'id': 5, 'titulo': 'Diseño de la arquitectura', 'estado':
-    'en_progreso', 'prioridad': 'urgente'},
-    ]},
-    {'id': 3, 'titulo': 'Migración de base de datos',
-    'descripcion': 'Migrar de MySQL a PostgreSQL sin downtime.',
-    'estado': 'pausado', 'prioridad': 'media', 'tareas': []},
-    ]
+@projects.route('/')
+def lista():
+    # Leer el parámetro de búsqueda de la URL (/proyectos?q=texto)
+    q = request.args.get('q', '').strip()
+    pagina = request.args.get('pagina', 1, type=int)
+    query = Proyecto.query.order_by(Proyecto.creado_en.desc())
 
-CONTADOR = 4 # Simulamos el autoincremento de ID
+    if q:
+        query = query.filter(
+            db.or_(Proyecto.titulo.ilike(f'%{q}%'),
+            Proyecto.descripcion.ilike(f'%{q}%'))
+            )
+        
+    paginacion = query.paginate(page=pagina, per_page=10, error_out=False)    
+    return render_template('projects/lista.html',
+                            proyectos = paginacion.items,                                
+                            paginacion = paginacion,
+                            q = q,
+                            form_busqueda = BusquedaForm())
+
+@projects.route('/<int:pid>')
+def detalle(pid):
+    proyecto = Proyecto.query.get_or_404(pid)
+    tareas = proyecto.tareas.order_by(Tarea.creado_en.desc()).all()
+    return render_template('projects/detalle.html',
+                            proyecto=proyecto,
+                            tareas=tareas,
+                            form=FormularioVacio())
 
 @projects.route('/nuevo', methods=['GET', 'POST'])
 def nuevo():
     form = ProyectoForm()
-    # form.validate_on_submit() devuelve True únicamente cuando:
-    # 1. La petición es POST (el usuario envió el formulario), Y
-    # 2. Todos los validadores pasan (datos correctos).
-    # En cualquier otro caso devuelve False:
-    # - Petición GET (mostrar el formulario por primera vez)
-    # - Petición POST con errores de validación
     if form.validate_on_submit():
-        global CONTADOR
-        nuevo_proyecto = {
-        'id': CONTADOR,
-        'titulo': form.titulo.data,
-        'descripcion': form.descripcion.data or '',
-        'fecha_limite':str(form.fecha_limite.data) if form.fecha_limite.data else None,
-        'estado': 'activo',
-        'tareas': []
-        }
-        PROYECTOS.append(nuevo_proyecto)
-        CONTADOR += 1
-        # flash() guarda el mensaje en la sesión para mostrarlo
-        # en la SIGUIENTE petición (después del redirect).
-        flash(f'Proyecto "{nuevo_proyecto["titulo"]}" creado correctamente.',
-        'success')
-        # Patrón PRG: después de un POST exitoso, siempre redirige.
+        proyecto = Proyecto(
+                    titulo = form.titulo.data,
+                    descripcion = form.descripcion.data,
+                    fecha_limite = form.fecha_limite.data,
+                    propietario_id = 1 # En U05 usaremos current_user.id
+                    )
+        db.session.add(proyecto)
+        db.session.commit()
+        flash(f'Proyecto "{proyecto.titulo}" creado.', 'success')
         return redirect(url_for('projects.lista'))
-    # GET o POST con errores: renderizar el formulario.
-    # Si es POST con errores, form.titulo.errors contendrá los mensajes.
+    
     return render_template('projects/form.html',
-    form=form,
-    titulo_pagina='Nuevo proyecto')
+                            form=form, titulo_pagina='Nuevo proyecto')
 
 @projects.route('/<int:pid>/editar', methods=['GET', 'POST'])
 def editar(pid):
-    # Buscar el proyecto por ID
-    proyecto = next((p for p in PROYECTOS if p['id'] == pid), None)
-    if proyecto is None:
-        from flask import abort
-        abort(404)
-    # Al instanciar el formulario con obj=proyecto,
-    # WTForms rellena automáticamente los campos con los valores del objeto.
-    # Esto funciona tanto con diccionarios como con objetos SQLAlchemy (U04).
-    form = ProyectoForm(data=proyecto)
-
+    proyecto = Proyecto.query.get_or_404(pid)
+    form = ProyectoForm(obj=proyecto)
     if form.validate_on_submit():
-        # Actualizar los datos del proyecto
-        proyecto['titulo'] = form.titulo.data
-        proyecto['descripcion'] = form.descripcion.data or ''
-        proyecto['fecha_limite']= str(form.fecha_limite.data) if form.fecha_limite.data else None
-        
-        flash('Proyecto actualizado correctamente.', 'success')
+        form.populate_obj(proyecto) # Rellena el objeto con los datos del form
+        db.session.commit()
+        flash('Proyecto actualizado.', 'success')
         return redirect(url_for('projects.detalle', pid=pid))
-        
+    
     return render_template('projects/form.html',
                             form=form,
-                            titulo_pagina=f'Editar: {proyecto["titulo"]}')
+                            titulo_pagina=f'Editar: {proyecto.titulo}')
 
-@projects.route('/', methods=['GET', 'POST'])
-def lista():
-    form_busqueda = BusquedaForm()
-    proyectos = PROYECTOS.copy()
-    q = ''
-
-    # Leer el parámetro de búsqueda de la URL (/proyectos?q=texto)
-    q = request.args.get('q', '').strip()
-    if q:
-        proyectos = [
-            p for p in proyectos
-            if q.lower() in p['titulo'].lower()
-            or q.lower() in p.get('descripcion', '').lower()
-        ]
-        
-    return render_template('projects/lista.html',
-                            proyectos=proyectos,
-                            form_busqueda=form_busqueda,
-                            q=q,
-                            total=len(PROYECTOS))
-
-@projects.route('/<int:pid>')
-def detalle(pid):
-    proyecto = next((p for p in PROYECTOS if p['id'] == pid), None)
-    if proyecto is None:
-        abort(404)
-    return render_template('projects/detalle.html', proyecto=proyecto)
+@projects.route('/<int:pid>/eliminar', methods=['POST'])
+def eliminar(pid):
+    proyecto = Proyecto.query.get_or_404(pid)
+    db.session.delete(proyecto) # cascade elimina sus tareas y comentarios
+    db.session.commit()
+    flash('Proyecto eliminado.', 'success')
+    return redirect(url_for('projects.lista'))

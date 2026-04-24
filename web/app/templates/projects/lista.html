@@ -47,7 +47,7 @@
         </div>
         <p class='descripcion'>{{ p.descripcion | truncate(100) }}</p>
         <div class='tarjeta-footer'>
-            <span>{{ p.tareas | length }} tareas</span>
+            <span>{{ p.tareas.count() }} tareas</span>
             <a href="{{ url_for('projects.detalle', pid=p.id) }}">Ver
     detalles →</a>
         </div>
