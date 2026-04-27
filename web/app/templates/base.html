@@ -14,14 +14,19 @@
         <a href="{{ url_for('main.index') }}" class='logo'>📋 TaskManager</a>
         
         <div class='nav-links'>
-        <a href="{{ url_for('projects.lista') }}">Proyectos</a>
-        <a href="{{ url_for('tasks.mis_tareas') }}">Mis tareas</a>
-        {% if current_user %}
-        <span class='usuario'>{{ current_user.nombre }}</span>
-        <a href="{{ url_for('auth.logout') }}">Salir</a>
-        {% else %}
-        <a href="{{ url_for('auth.login') }}" class='btnnav'>Entrar</a>
-        {% endif %}
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('projects.lista') }}">Proyectos</a>
+                <a href="{{ url_for('tasks.mis_tareas') }}">Mis tareas</a>
+                {% if current_user.es_admin %}
+                    <a href="{{ url_for('main.admin') }}" class='nav-admin'>⚙
+                    Admin</a>
+                {% endif %}
+                <span class='nav-usuario'>{{ current_user.nombre }}</span>
+                <a href="{{ url_for('auth.logout') }}" class='nav-logout'>Salir</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}">Iniciar sesión</a>
+                <a href="{{ url_for('auth.registro') }}" class='btn btnsm'>Registrarse</a>
+            {% endif %}
         </div>
     </nav>
 

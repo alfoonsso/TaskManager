@@ -1,0 +1,46 @@
+<!-- web/app/templates/auth/login.html -->
+{% extends 'base.html' %}
+{% block title %}Iniciar sesión — TaskManager{% endblock %}
+
+{% block content %}
+<div class='auth-container'>
+    <div class='auth-card'>
+        <h1>Iniciar sesión</h1>
+        <p class='auth-subtitulo'>Accede a tus proyectos y tareas</p>
+        
+        <form method='POST' novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class='campo {% if form.email.errors %}con-error{% endif %}'>
+                {{ form.email.label }}
+                {{ form.email(class='input', placeholder='tu@email.com',
+                autofocus=true) }}
+                {% for error in form.email.errors %}
+                    <p class='error-msg'>{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class='campo {% if form.password.errors %}con-error{% endif
+            %}'>
+                {{ form.password.label }}
+                {{ form.password(class='input', placeholder='Tu contraseña') }}
+                {% for error in form.password.errors %}
+                    <p class='error-msg'>{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class='campo-check'>
+                {{ form.recordarme() }}
+                {{ form.recordarme.label }}
+            </div>
+
+            {{ form.submit(class='btn btn-block') }}
+        </form>
+
+        <p class='auth-link'>
+            ¿No tienes cuenta?
+            <a href="{{ url_for('auth.registro') }}">Créala aquí</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

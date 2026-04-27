@@ -1,21 +1,30 @@
+# web/app/__init__.py
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_login import LoginManager
 from config import Config
 
-# Instancias globales de las extensiones
-# Se inicializan aquí pero se 'enlazan' a la app en create_app()
 db = SQLAlchemy()
 migrate = Migrate()
+login_manager = LoginManager()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Inicializar extensiones con la app
     db.init_app(app)
     migrate.init_app(app, db)
+    login_manager.init_app(app)
 
+    # Ruta a la que redirigir cuando @login_required falla
+    login_manager.login_view = 'auth.login'
+
+    # Mensaje que se muestra al redirigir al login
+    login_manager.login_message = 'Inicia sesión para acceder a esta página.'
+    login_manager.login_message_category = 'info'
+
+    # Registrar blueprints
     from app.routes.main import main
     from app.routes.projects import projects
     from app.routes.tasks import tasks
@@ -25,19 +34,12 @@ def create_app(config_class=Config):
     app.register_blueprint(tasks)
     app.register_blueprint(auth)
 
-    # Importar los modelos para que Flask-Migrate los detecte
-    from app import models # noqa: F401
+    from app import models # noqa
 
-    
     @app.errorhandler(404)
-    def pagina_no_encontrada(error):
-        return render_template('errores/404.html'), 404
-    @app.errorhandler(500)
-    def error_interno(error):
-        return render_template('errores/500.html'), 500
-    @app.context_processor
-    def inject_globals():
-        from flask import session
-        return {'current_user': session.get('usuario', None)}
+    def no_encontrado(e): return render_template('errores/404.html'), 404
+    
+    @app.errorhandler(403)
+    def prohibido(e): return render_template('errores/403.html'), 403
     
     return app
