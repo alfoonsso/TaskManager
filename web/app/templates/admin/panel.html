@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Panel Admin — TaskManager{% endblock %}
+{% block content %}
+
+<div class='page-header'>
+    <h1>Panel de Administración</h1>
+</div>
+
+<!-- Estadísticas globales -->
+<div class='proyectos-grid'>
+    <div class='tarjeta'>
+        <h3>Total Proyectos</h3>
+        <p style='font-size:2rem; font-weight:bold'>{{ total_proyectos }}</p>
+    </div>
+    <div class='tarjeta'>
+        <h3>Total Tareas</h3>
+        <p style='font-size:2rem; font-weight:bold'>{{ total_tareas }}</p>
+    </div>
+    <div class='tarjeta'>
+        <h3>Usuarios Activos</h3>
+        <p style='font-size:2rem; font-weight:bold'>{{ usuarios_activos }}</p>
+    </div>
+</div>
+
+<!-- Todos los proyectos -->
+<h2 style='margin-top:2rem'>Proyectos</h2>
+<table style='width:100%; border-collapse:collapse'>
+    <thead>
+        <tr style='background:#1a3a5c; color:white'>
+            <th style='padding:.6rem'>ID</th>
+            <th style='padding:.6rem'>Título</th>
+            <th style='padding:.6rem'>Propietario</th>
+            <th style='padding:.6rem'>Estado</th>
+            <th style='padding:.6rem'>Tareas</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in proyectos %}
+        <tr style='border-bottom:1px solid #eee'>
+            <td style='padding:.6rem'>{{ p.id }}</td>
+            <td style='padding:.6rem'>
+                <a href="{{ url_for('projects.detalle', pid=p.id) }}">{{ p.titulo }}</a>
+            </td>
+            <td style='padding:.6rem'>{{ p.propietario.nombre }}</td>
+            <td style='padding:.6rem'>
+                <span class='badge badge-{{ p.estado }}'>{{ p.estado | capitalize }}</span>
+            </td>
+            <td style='padding:.6rem'>{{ p.tareas.count() }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan='5' style='padding:.6rem'>No hay proyectos.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Todos los usuarios -->
+<h2 style='margin-top:2rem'>Usuarios</h2>
+<table style='width:100%; border-collapse:collapse'>
+    <thead>
+        <tr style='background:#1a3a5c; color:white'>
+            <th style='padding:.6rem'>ID</th>
+            <th style='padding:.6rem'>Nombre</th>
+            <th style='padding:.6rem'>Email</th>
+            <th style='padding:.6rem'>Rol</th>
+            <th style='padding:.6rem'>Registro</th>
+            <th style='padding:.6rem'>Activo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in usuarios %}
+        <tr style='border-bottom:1px solid #eee'>
+            <td style='padding:.6rem'>{{ u.id }}</td>
+            <td style='padding:.6rem'>{{ u.nombre }}</td>
+            <td style='padding:.6rem'>{{ u.email }}</td>
+            <td style='padding:.6rem'>{{ u.rol }}</td>
+            <td style='padding:.6rem'>{{ u.creado_en.strftime('%d/%m/%Y') }}</td>
+            <td style='padding:.6rem'>{{ '✅' if u.activo else '❌' }}</td>
+            <td style='padding:.6rem'>
+                <form action="{{ url_for('main.toggle_activo', uid=u.id) }}" method='POST'>
+                    {{ form.hidden_tag() }}
+                    <button type='submit' class='btn btn-sec'>
+                        {{ 'Desactivar' if u.activo else 'Activar' }}
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan='6' style='padding:.6rem'>No hay usuarios.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

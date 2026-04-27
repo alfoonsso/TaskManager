@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}403 — Acceso denegado{% endblock %}
+{% block content %}
+
+<div style='text-align:center; padding:4rem 2rem'>
+    <h1 style='font-size:5rem; color:#e74c3c; margin:0'>403</h1>
+    <h2>Acceso denegado</h2>
+    <p style='color:#666; margin:1rem 0 2rem'>
+        No tienes permisos para acceder a esta página.
+    </p>
+    <a href="{{ url_for('main.index') }}" class='btn'>← Volver al inicio</a>
+</div>
+
+{% endblock %}

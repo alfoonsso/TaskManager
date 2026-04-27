@@ -4,6 +4,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from config import Config
+from functools import wraps
+from flask import abort
+from flask_login import current_user
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -43,3 +46,11 @@ def create_app(config_class=Config):
     def prohibido(e): return render_template('errores/403.html'), 403
     
     return app
+
+def solo_admin(f):
+    @wraps(f)
+    def decorado(*args, **kwargs):
+        if not current_user.es_admin:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorado
