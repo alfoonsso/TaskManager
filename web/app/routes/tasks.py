@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, abort
+from flask_login import login_required, current_user
 from app import db
 from app.models import Proyecto, Tarea
 from app.forms import TareaForm
@@ -8,6 +9,7 @@ tasks = Blueprint('tasks', __name__, url_prefix='/proyectos')
 ORDEN_PRIORIDAD = {'urgente': 0, 'alta': 1, 'media': 2, 'baja': 3}
 
 @tasks.route('/<int:pid>/tareas/nueva', methods=['GET', 'POST'])
+@login_required # ← Protege esta ruta
 def nueva(pid):
     proyecto = Proyecto.query.get_or_404(pid)
     form = TareaForm()
@@ -29,6 +31,7 @@ def nueva(pid):
                             titulo_pagina='Nueva tarea')
 
 @tasks.route('/<int:pid>/tareas/<int:tid>/editar', methods=['GET', 'POST'])
+@login_required # ← Protege esta ruta
 def editar(pid, tid):
     proyecto = Proyecto.query.get_or_404(pid)
     tarea = Tarea.query.get_or_404(tid)
@@ -43,6 +46,7 @@ def editar(pid, tid):
                             titulo_pagina=f'Editar: {tarea.titulo}')
 
 @tasks.route('/<int:pid>/tareas/<int:tid>/eliminar', methods=['POST'])
+@login_required # ← Protege esta ruta
 def eliminar(pid, tid):
     tarea = Tarea.query.get_or_404(tid)
     db.session.delete(tarea)
@@ -51,6 +55,7 @@ def eliminar(pid, tid):
     return redirect(url_for('projects.detalle', pid=pid))
 
 @tasks.route('/tareas')
+@login_required # ← Protege esta ruta
 def mis_tareas():
     tareas = Tarea.query.all()
     tareas.sort(key=lambda t: ORDEN_PRIORIDAD.get(t.prioridad, 99))

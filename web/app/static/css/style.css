@@ -166,3 +166,34 @@ border-left: 4px solid #1e8449;
 footer { 
     text-align: center; padding: 2rem; color: var(--texto-suave);
     margin-top: 3rem; border-top: 1px solid #e8e8e8; font-size: .9rem; }
+.auth-container {
+ min-height: 70vh;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ padding: 2rem;
+}
+.auth-card {
+ background: #fff;
+ border-radius: 12px;
+ padding: 2.5rem;
+ width: 100%;
+ max-width: 420px;
+ box-shadow: 0 4px 20px rgba(0,0,0,.10);
+}
+.auth-card h1 { font-size: 1.7rem; color: #1a3a5c; margin-bottom: .3rem;
+}
+.auth-subtitulo { color: #7f8c8d; margin-bottom: 1.8rem; font-size: .95rem;
+}
+.auth-link { text-align: center; margin-top: 1.5rem; color: #7f8c8d;
+ font-size: .9rem; }
+.auth-link a { color: #2471a3; font-weight: 600; text-decoration: none;
+}
+.btn-block { width: 100%; text-align: center; padding: .75rem; }
+.btn-sm { padding: .35rem .9rem; font-size: .85rem; }
+.campo-check { display: flex; align-items: center; gap: .5rem;
+ margin-bottom: 1.2rem; }
+.campo-check input { width: auto; }
+.nav-usuario { color: #bdc3c7; font-size: .9rem; }
+.nav-logout { color: #e74c3c !important; }
+.nav-admin { color: #f39c12 !important; font-weight: 600; }
