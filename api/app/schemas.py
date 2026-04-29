@@ -1,6 +1,6 @@
 # api/app/schemas.py
 from pydantic import BaseModel, Field, EmailStr
-from typing import Optional, List
+from typing import Optional, List, TypeVar, Generic
 from datetime import datetime, date
 
 
@@ -15,16 +15,23 @@ class ProyectoBase(BaseModel):
     descripcion: Optional[str] = Field(None, max_length=500)
     fecha_limite: Optional[date] = None
 
+
 class ProyectoCreate(ProyectoBase):
     """Schema para crear un proyecto. Hereda de ProyectoBase sin añadir nada."""
     pass
+
 
 class ProyectoUpdate(BaseModel):
     """Schema para actualizar un proyecto. Todos los campos son opcionales."""
     titulo: Optional[str] = Field(None, min_length=3, max_length=100)
     descripcion: Optional[str] = None
-    estado: Optional[str] = None
+    estado: Optional[str] = Field(
+        None,
+        pattern='^(activo|pausado|completado)$',
+        description='activo | pausado | completado'
+    )
     fecha_limite: Optional[date] = None
+
 
 class ProyectoResponse(ProyectoBase):
     """Schema para la respuesta. Incluye campos generados por el servidor."""
@@ -32,29 +39,32 @@ class ProyectoResponse(ProyectoBase):
     estado: str
     creado_en: datetime
     propietario_id: int
-    progreso: int = 0 # Calculado, no almacenado en la BD
+    progreso: int = 0  # Calculado, no almacenado en la BD
 
-class Config:
-    # from_attributes=True permite crear el schema desde objetos SQLAlchemy
-    # (antes se llamaba orm_mode=True en Pydantic v1)
-    from_attributes = True
+    class Config:
+        # from_attributes=True permite crear el schema desde objetos SQLAlchemy
+        # (antes se llamaba orm_mode=True en Pydantic v1)
+        from_attributes = True
 
 
 # ═══════════════════════════════════════════════════
 # TAREA
 # ═══════════════════════════════════════════════════
+
 class TareaBase(BaseModel):
     titulo: str = Field(..., min_length=3, max_length=200)
     descripcion: Optional[str] = None
     prioridad: str = Field('media',
-    pattern='^(baja|media|alta|urgente)$')
+                           pattern='^(baja|media|alta|urgente)$')
     estado: str = Field('pendiente',
                         pattern='^(pendiente|en_progreso|revision|completada)$')
     fecha_limite: Optional[date] = None
 
+
 class TareaCreate(TareaBase):
     proyecto_id: int
     asignado_id: Optional[int] = None
+
 
 class TareaUpdate(BaseModel):
     titulo: Optional[str] = None
@@ -64,14 +74,15 @@ class TareaUpdate(BaseModel):
     asignado_id: Optional[int] = None
     fecha_limite: Optional[date] = None
 
+
 class TareaResponse(TareaBase):
     id: int
     proyecto_id: int
     asignado_id: Optional[int]
     creado_en: datetime
 
-class Config:
-    from_attributes = True
+    class Config:
+        from_attributes = True
 
 
 # ═══════════════════════════════════════════════════
@@ -80,8 +91,9 @@ class Config:
 
 class UsuarioCreate(BaseModel):
     nombre: str = Field(..., min_length=2, max_length=100)
-    email: EmailStr # Valida formato email automáticamente
+    email: EmailStr  # Valida formato email automáticamente
     password: str = Field(..., min_length=8)
+
 
 class UsuarioResponse(BaseModel):
     """Nunca incluir la contraseña en la respuesta."""
@@ -91,19 +103,22 @@ class UsuarioResponse(BaseModel):
     rol: str
     creado_en: datetime
 
-class Config:
-    from_attributes = True
+    class Config:
+        from_attributes = True
 
 
 # ═══════════════════════════════════════════════════
 # RESPUESTA PAGINADA (genérica)
 # ═══════════════════════════════════════════════════
 
-from typing import TypeVar, Generic
 T = TypeVar('T')
+
 
 class RespuestaPaginada(BaseModel, Generic[T]):
     total: int
     pagina: int
     paginas: int
     items: List[T]
+
+    class Config:
+        from_attributes = True
