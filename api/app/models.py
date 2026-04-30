@@ -25,6 +25,11 @@ class Usuario(Base):
     creado_en = Column(DateTime, default=datetime.utcnow)
     proyectos = relationship('Proyecto', back_populates='propietario')
 
+    @property
+    def es_admin(self) -> bool:
+        """True si el usuario tiene rol de administrador."""
+        return self.rol == 'admin'
+
 class Proyecto(Base):
     __tablename__ = 'proyectos'
     id = Column(Integer, primary_key=True)

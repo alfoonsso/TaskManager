@@ -1,4 +1,4 @@
-# api/main.py — versión completa
+# api/main.py — versión completa con autenticación JWT
 import logging
 import traceback
 from fastapi import FastAPI, Request, HTTPException, status
@@ -6,17 +6,15 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
-from app.routers import projects, tasks
+from app.routers import projects, tasks, auth   # ← 'users' eliminado: no existe aún
 
-# ── Logging — ACT 7.3 punto 4 (opcional) ─────────────────────────────
-# Registra errores 500 con la traza completa en un archivo.
-# Los errores quedan en 'taskmanager.log' junto a main.py.
+# ── Logging ───────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s  %(levelname)-8s  %(message)s',
     handlers=[
         logging.FileHandler('taskmanager.log', encoding='utf-8'),
-        logging.StreamHandler(),   # también muestra en la consola de uvicorn
+        logging.StreamHandler(),
     ]
 )
 logger = logging.getLogger('taskmanager')
@@ -44,65 +42,49 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-# ── Manejador para errores de validación Pydantic (422) ──────────────
-# Se activa cuando el cliente envía datos con tipos incorrectos o
-# campos obligatorios que faltan.
-# Ejemplo: fecha_limite='hola' → 422 con detalle del campo fallido.
+# ── Manejadores de error globales ─────────────────────────────────────
 @app.exception_handler(RequestValidationError)
 async def error_validacion(request: Request, exc: RequestValidationError):
     errores = []
     for error in exc.errors():
-        # loc[0] es siempre 'body'/'query'/etc. — lo omitimos para mayor claridad
         campo = ' → '.join(str(parte) for parte in error['loc'][1:])
         errores.append({
-            'campo': campo or 'body',
+            'campo':   campo or 'body',
             'mensaje': error['msg'],
-            'tipo': error['type'],
+            'tipo':    error['type'],
         })
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            'error': 'Error de validación',
-            'detalle': errores,
-        }
+        content={'error': 'Error de validación', 'detalle': errores}
     )
 
-# ── Manejador para errores de integridad de BD (409) ──────────────────
-# Se activa cuando se viola una restricción de la BD
-# (clave única duplicada, FK inexistente, etc.).
 @app.exception_handler(IntegrityError)
 async def error_integridad(request: Request, exc: IntegrityError):
     return JSONResponse(
         status_code=status.HTTP_409_CONFLICT,
         content={
-            'error': 'Conflicto de datos',
+            'error':   'Conflicto de datos',
             'detalle': 'Un registro con esos datos ya existe',
         }
     )
 
-# ── Manejador para errores internos del servidor (500) ─────────────────
-# Última línea de defensa: captura cualquier excepción no manejada.
-# Re-lanza HTTPException para que FastAPI la gestione con normalidad.
 @app.exception_handler(Exception)
 async def error_interno(request: Request, exc: Exception):
     if isinstance(exc, HTTPException):
-        raise exc  # dejar que FastAPI lo maneje normalmente
-
-    # Registrar traza completa en el log (nunca mostrarla al cliente)
-    logger.error(
-        'Error interno en %s %s\n%s',
-        request.method,
-        request.url.path,
-        traceback.format_exc(),
-    )
+        raise exc   # dejar que FastAPI lo maneje normalmente
+    logger.error('Error interno en %s %s\n%s',
+                 request.method, request.url.path, traceback.format_exc())
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={'error': 'Error interno del servidor'},
+        content={'error': 'Error interno del servidor'}
     )
 
-# ── Routers ───────────────────────────────────────────────────────────
-app.include_router(projects.router, prefix='/api/v1')
-app.include_router(tasks.router, prefix='/api/v1')
+# ── Routers — registrados UNA sola vez con el prefijo ────────────────
+# auth primero para que /docs muestre el botón Authorize correctamente
+PREFIX = '/api/v1'
+app.include_router(auth.router,     prefix=PREFIX)
+app.include_router(projects.router, prefix=PREFIX)
+app.include_router(tasks.router,    prefix=PREFIX)
 
 # ── Endpoints de estado ───────────────────────────────────────────────
 @app.get('/', tags=['Estado'])

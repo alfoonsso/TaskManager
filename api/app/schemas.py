@@ -39,11 +39,9 @@ class ProyectoResponse(ProyectoBase):
     estado: str
     creado_en: datetime
     propietario_id: int
-    progreso: int = 0  # Calculado, no almacenado en la BD
+    progreso: int = 0   # Calculado, no almacenado en la BD
 
     class Config:
-        # from_attributes=True permite crear el schema desde objetos SQLAlchemy
-        # (antes se llamaba orm_mode=True en Pydantic v1)
         from_attributes = True
 
 
@@ -54,8 +52,7 @@ class ProyectoResponse(ProyectoBase):
 class TareaBase(BaseModel):
     titulo: str = Field(..., min_length=3, max_length=200)
     descripcion: Optional[str] = None
-    prioridad: str = Field('media',
-                           pattern='^(baja|media|alta|urgente)$')
+    prioridad: str = Field('media', pattern='^(baja|media|alta|urgente)$')
     estado: str = Field('pendiente',
                         pattern='^(pendiente|en_progreso|revision|completada)$')
     fecha_limite: Optional[date] = None
@@ -91,7 +88,7 @@ class TareaResponse(TareaBase):
 
 class UsuarioCreate(BaseModel):
     nombre: str = Field(..., min_length=2, max_length=100)
-    email: EmailStr  # Valida formato email automáticamente
+    email: EmailStr     # Valida formato email automáticamente
     password: str = Field(..., min_length=8)
 
 
@@ -105,6 +102,28 @@ class UsuarioResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ═══════════════════════════════════════════════════
+# AUTENTICACIÓN — sección 3.1 U08
+# ═══════════════════════════════════════════════════
+
+class TokenResponse(BaseModel):
+    """Respuesta del endpoint de login."""
+    access_token: str
+    refresh_token: str
+    token_type: str = 'bearer'
+
+
+class RefreshRequest(BaseModel):
+    """Petición para renovar el access token."""
+    refresh_token: str
+
+
+class AccessTokenResponse(BaseModel):
+    """Respuesta del endpoint de refresh."""
+    access_token: str
+    token_type: str = 'bearer'
 
 
 # ═══════════════════════════════════════════════════
